@@ -43,7 +43,17 @@ else
 fi
 
 docker pull shashiikora/openwrt-redstone
+if [ $? -ne 0 ]; then
+    echo "拉取 shashiikora/openwrt-redstone 镜像失败!"
+    exit 1
+fi
+
 docker run --restart always --name openwrt -d --network macnet --privileged shashiikora/openwrt-redstone /sbin/init
+if [ $? -ne 0 ]; then
+    echo "启动 openwrt 容器失败!"
+    exit 1
+fi
+
 
 if ! command -v nmap &> /dev/null; then
     echo "请先安装nmap：sudo apt install nmap"
