@@ -13,6 +13,14 @@ fi
 
 echo "找到的网络接口是: $INTERFACE"
 
+echo "设置 $INTERFACE 为混杂模式..."
+sudo ip link set $INTERFACE promisc on
+if [ $? -ne 0 ]; then
+    echo "设置 $INTERFACE 为混杂模式失败!"
+    exit 1
+fi
+echo "$INTERFACE 已设置为混杂模式"
+
 # 获取该接口的IP地址
 IP_ADDRESS=$(ip -4 addr show $INTERFACE | grep -oP '(?<=inet\s)\d+\.\d+\.\d+\.\d+')
 
