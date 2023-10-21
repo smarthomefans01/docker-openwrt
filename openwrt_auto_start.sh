@@ -32,8 +32,13 @@ echo "计算得到的子网为: $SUBNET"
 echo "计算得到的网关为: $GATEWAY"
 
 # 使用docker命令创建网络
-echo "开始使用docker命令创建网络..."
+if docker network inspect macnet &> /dev/null; then
+    # 如果存在，则删除macnet网络
+    docker network rm macnet
+fi
+# 创建macnet网络
 docker network create -d macvlan --subnet=$SUBNET --gateway=$GATEWAY -o parent=$INTERFACE macnet
+
 
 if [ $? -eq 0 ]; then
     echo "成功创建macnet网络!"
