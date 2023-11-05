@@ -10,6 +10,23 @@ if ! command -v nmap &>/dev/null; then
     fi
 fi
 
+echo "检查是否已存在名为 'openwrt' 的Docker容器..."
+if docker ps -a --format '{{.Names}}' | grep -q "^openwrt$"; then
+    echo "检测到已存在名为 'openwrt' 的Docker容器。"
+    # 提示用户是否删除
+    read -p "您希望删除现有的 'openwrt' 容器吗？(y/n) " -n 1 -r
+    echo  # 新行
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # 用户选择了删除
+        docker rm -f openwrt
+        echo "容器 'openwrt' 已被删除。"
+    else
+        # 用户选择了不删除
+        echo "未删除容器。请手动处理后再试。"
+        exit 1
+    fi
+fi
+
 echo "开始查找第一个非lo（非本地）网络接口的名称..."
 
 # 获取第一个非lo网络接口的名称
