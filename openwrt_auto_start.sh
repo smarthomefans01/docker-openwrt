@@ -1,5 +1,15 @@
 #!/bin/bash
 
+echo "检查nmap是否安装..."
+if ! command -v nmap &>/dev/null; then
+    echo "nmap未安装。正在尝试自动安装nmap..."
+    sudo apt update && sudo apt install -y nmap
+    if [ $? -ne 0 ]; then
+        echo "安装nmap失败，请手动安装后重新运行脚本。"
+        exit 1
+    fi
+fi
+
 echo "开始查找第一个非lo（非本地）网络接口的名称..."
 
 # 获取第一个非lo网络接口的名称
