@@ -68,16 +68,6 @@ else
     exit 1
 fi
 
-# 创建macvlan虚拟接口
-echo "创建macvlan虚拟接口..."
-sudo ip link add mac0 link $INTERFACE type macvlan mode bridge
-sudo ip addr add YOUR_STATIC_IP_FOR_MAC0/24 dev mac0
-sudo ip link set mac0 up
-
-# 设置路由规则
-echo "更新路由规则..."
-sudo ip route add $SUBNET dev mac0
-
 docker pull shashiikora/openwrt-redstone
 if [ $? -ne 0 ]; then
     echo "拉取 shashiikora/openwrt-redstone 镜像失败!"
@@ -118,6 +108,7 @@ done
 
 echo "选定的OpenWrt IP地址是: $OPENWRT_IP"
 
+
 OPENWRT_CONFIG="
 config interface 'lan'
         option type 'bridge'
@@ -132,6 +123,24 @@ config interface 'lan'
 "
 
 echo "$OPENWRT_CONFIG" | docker exec -i openwrt bash -c "cat > /etc/config/network"
+
+# 创建macvlan虚拟接口
+echo "创建macvlan虚拟接口..."
+sudo ip link add mac0 link $INTERFACE type macvlan mode bridge
+
+# 选择一个未使用的 IP 地址用作 mac0 的 IP 地址
+MAC0_IP="$NETWORK_PART.$((RANDOM_END + 1))"
+while echo "$ACTIVE_IPS" | grep -q "$MAC0_IP"; do
+    MAC0_IP="$NETWORK_PART.$((RANDOM % 253 + 2))"
+done
+
+sudo ip addr add $MAC0_IP/24 dev mac0
+sudo ip link set mac0 up
+
+# 设置路由规则
+echo "更新路由规则..."
+sudo ip route add $OPENWRT_IP dev mac0
+route add default gw $OPENWRT_IP mac0
 
 echo "OpenWrt容器的网络配置已更新。"
 echo "您可以通过以下地址访问OpenWrt: http://$OPENWRT_IP/"
